@@ -1,0 +1,21 @@
+{
+  "name": "GuideBot",
+  "version": "v2020.6.6b",
+  "description": "Um bot criado para ajudar iniciantes.",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Albert Oliveira",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^7.0.1",
+    "discord-anti-spam": "^2.4.1",
+    "discord.js": "^12.2.0",
+    "enmap": "^5.2.9",
+    "eslint": "^7.1.0",
+    "lowdb": "^1.0.0",
+    "node-gyp": "^7.0.0"
+  }
+}
