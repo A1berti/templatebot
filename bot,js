@@ -1,0 +1,71 @@
+//------------------------------------------------------------------------------
+// Isto irá verificar se a versão do Node que você está executando é a necessária.
+// Versão do Node, se não for, vai disparar o seguinte erro para informá-lo.
+//------------------------------------------------------------------------------
+if (Number(process.version.slice(1).split('.')[0]) < 12) throw new Error('Node 12.0.0 ou superior é necessário. Atualize o Node em seu sistema.');
+
+// Carrega a biblioteca discord.js
+const Discord = require('discord.js');
+// Nós também carregamos o resto das coisas que precisamos neste arquivo:
+const Enmap = require('enmap');
+const fs = require('fs');
+
+//------------------------------------------------------------------------------
+// Este é o seu cliente. Algumas pessoas o chamam de "bot", outras de "self",
+// alguns podem chamá-lo de `cootchie`. De qualquer forma, quando você vê `cliente.algo`,
+// ou `bot.something`, é a isto que nos referimos. Seu cliente.
+//------------------------------------------------------------------------------
+const bot = new Discord.Client();
+
+// Aqui nós carregamos o arquivo de configuração que contém nosso token e nossos valores de prefixo.
+const {token} = require('./config.json');
+// token contém o token do bot
+// prefixo contém o prefixo de mensagem
+
+//------------------------------------------------------------------------------
+// Aliases e comandos são colocados em coleções de onde podem ser lidos,
+// catalogados, listados, etc.
+//------------------------------------------------------------------------------
+bot.commands = new Enmap();
+
+  //------------------------------------------------------------------------------
+  // Aqui nós carregamos comandos na memória, como uma coleção, para que eles sejam acessíveis
+  // aqui e em todos os outros lugares.
+  //------------------------------------------------------------------------------
+  fs.readdir('./commands/', (err, files) => {
+    if (err) return console.error(err);
+    files.forEach(file => {
+      if (!file.endsWith('.js')) return;
+      // Carrega o próprio arquivo de comando
+      const props = require(`./commands/${file}`);
+      // Obtenha apenas o nome do comando a partir do nome do arquivo
+      const commandName = file.split('.')[0];
+      // Aqui nós simplesmente armazenamos a coisa toda no comando Enmap. Nós não estamos rodando agora.
+      bot.commands.set(commandName, props);
+    });
+  });
+
+  // Este loop lê a pasta /events/ e anexa cada arquivo de evento ao evento apropriado.
+  fs.readdir('./events/', (err, files) => {
+    if (err) return console.error(err);
+    files.forEach(file => {
+      // Se o arquivo não for um arquivo JS, ignore-o
+      if (!file.endsWith('.js')) return;
+      // Carregue o próprio arquivo de eventos
+      const event = require(`./events/${file}`);
+      // Obtenha apenas o nome do evento a partir do nome do arquivo
+      const eventName = file.split('.')[0];
+      //------------------------------------------------------------------------------
+      // Receita super-secreta para chamar os eventos com todos os seus argumentos próprios *após* o `bot` var.
+      // sem entrar em muitos detalhes, isto significa que cada evento será chamado com o argumento do bot,
+      // seguido de seus argumentos "normais", como mensagem, membro, etc, etc.
+      // A propósito, esta linha é fantástica.
+      //------------------------------------------------------------------------------
+      bot.on(eventName, event.bind(null, bot));
+      delete require.cache[require.resolve(`./events/${file}`)];
+    });
+  });
+
+
+// Aqui nós fazemos o login do cliente.
+bot.login(token);
